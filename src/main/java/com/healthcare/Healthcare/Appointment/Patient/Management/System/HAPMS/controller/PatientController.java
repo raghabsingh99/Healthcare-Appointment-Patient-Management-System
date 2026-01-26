@@ -6,6 +6,7 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.ser
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,4 +31,17 @@ public class PatientController {
     public PatientResponse create(@Valid @RequestBody PatientCreateRequest req){
         return patientService.create(req);
     }
+
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
+    public Page<PatientResponse> getAllPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String dir
+    ){
+        return patientService.getAllPaged(page,size,sortBy,dir);
+    }
+
+
 }

@@ -1,6 +1,7 @@
 package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.controller;
 
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentCreateRequest;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentStatusUpdateRequest;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Response.AppointmentResponse;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.AppointmentStatus;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.BusinessRuleException;
@@ -39,5 +40,11 @@ public class AppointmentController {
     public List<String> reportBookedPerDoctor(){
         return appointmentService.reportBookCountPerDoctor();
 
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public AppointmentResponse updateStatus(@PathVariable Long id, @Valid@RequestBody AppointmentStatusUpdateRequest req) throws BusinessRuleException, NotFoundException {
+        return appointmentService.updateStatus(id,req.getStatus());
     }
 }

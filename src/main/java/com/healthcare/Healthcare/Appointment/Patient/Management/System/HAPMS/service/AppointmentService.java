@@ -80,20 +80,35 @@ public class AppointmentService {
         return toResponse(appointment);
     }
 
-    public List<AppointmentResponse> getStatus(AppointmentStatus status){
+    public List<AppointmentResponse> getStatus(AppointmentStatus status) {
         return appointmentRepository.findByStatus(status).stream().map(this::toResponse).toList();
     }
 
-    public List<String> reportBookCountPerDoctor(){
+    public List<String> reportBookCountPerDoctor() {
         return appointmentRepository.findByStatus(AppointmentStatus.BOOKED).stream()
-                .collect(Collectors.groupingBy(a->a.getDoctor().getName(),Collectors.counting()))
-        .entrySet().stream()
-                .sorted((e1,e2)->Long.compare(e2.getValue(),e1.getValue()))
-                .map(e->e.getKey()+ "=>" + e.getValue())
+                .collect(Collectors.groupingBy(a -> a.getDoctor().getName(), Collectors.counting()))
+                .entrySet().stream()
+                .sorted((e1, e2) -> Long.compare(e2.getValue(), e1.getValue()))
+                .map(e -> e.getKey() + "=>" + e.getValue())
                 .toList();
     }
 
+    @Transactional
+    public AppointmentResponse updateStatus(Long appointmentId, AppointmentStatus newStatus) throws NotFoundException, BusinessRuleException {
+        Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow(
+                () -> new NotFoundException("Appointment not found" + appointmentId));
+        if (appointment.getStatus() != AppointmentStatus.BOOKED) {
+            throw new BusinessRuleException("Only BOOKED appointments can be updated.Current: " + appointment.getStatus());
+        }
 
+        appointment.setStatus(newStatus);
+        Appointment saved = appointmentRepository.save(appointment);
+        return toResponse(saved);
 
-
+    }
 }
+
+
+
+
+
