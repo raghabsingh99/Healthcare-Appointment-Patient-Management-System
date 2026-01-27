@@ -1,6 +1,8 @@
 package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.controller;
 
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.LoginRequest;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.LogoutRequest;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.RefreshTokenRequest;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.RegisterRequest;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Response.AuthResponse;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.BusinessRuleException;
@@ -8,10 +10,7 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.ser
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,7 +29,21 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest req){
+    public AuthResponse login(@Valid @RequestBody LoginRequest req) throws BusinessRuleException {
         return authService.login(req);
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(@Valid@RequestBody RefreshTokenRequest req) throws BusinessRuleException {
+        return authService.refresh(req.getRefreshToken());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(
+            @Valid@RequestBody LogoutRequest req,
+            @RequestHeader(value = "Authorization",required = false)String authHeader
+            ) throws BusinessRuleException {
+        authService.logout(req.getRefreshToken(),authHeader);
+        return ResponseEntity.ok("Logged out");
     }
 }

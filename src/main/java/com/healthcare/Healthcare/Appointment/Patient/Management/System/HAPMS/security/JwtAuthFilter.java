@@ -1,6 +1,7 @@
 package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.security;
 
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.service.CustomUserDetailService;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.service.TokenBlacklistService;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,6 +23,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailService customUserDetailService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -32,8 +34,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String auth = request.getHeader("Authorization");
 
+
         if (auth != null && auth.startsWith("Bearer ")) {
             String token = auth.substring(7);
+            String jti = jwtUtil.extractJti(token);
+
+            if(tokenBlacklistService.isBlacklisted(jti)){
+                filterChain.doFilter(request,response);
+                return;
+            }
 
             if (jwtUtil.isValid(token)
                     && SecurityContextHolder.getContext().getAuthentication() == null) {

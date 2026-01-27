@@ -2,10 +2,7 @@ package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.se
 
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentCreateRequest;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Response.AppointmentResponse;
-import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.Appointment;
-import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.AppointmentStatus;
-import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.Doctor;
-import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.Patient;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.*;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.BusinessRuleException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.NotFoundException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.AppointmentRepository;
@@ -25,11 +22,18 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorService doctorService;
     private final PatientService patientService;
+    private final DoctorSlotService doctorSlotService;
+    private final NotificationService notificationService;
 
     @Transactional
     public AppointmentResponse book(AppointmentCreateRequest req) throws NotFoundException, BusinessRuleException {
         Patient patient = patientService.getEntity(req.getPatientId());
-        Doctor doctor = doctorService.getEntity(req.getDoctorId());
+
+
+        DoctorSlot slot = doctorSlotService.getAvailableSlot(req.getSlotId());
+        Doctor doctor = slot.getDoctor();
+        LocalDateTime appTime = slot.getStartTime();
+
 
         // Rule: Patient cannot have overlapping time
         LocalDateTime localDateTime = req.getAppointmentDateTime();
@@ -53,11 +57,14 @@ public class AppointmentService {
             throw new BusinessRuleException("Doctor reached daily appointment limit for " + day);
         }
         Appointment saved = appointmentRepository.save(Appointment.builder()
-                .appointmentDateTime(localDateTime)
+                .appointmentDateTime(appTime)
                 .status(AppointmentStatus.BOOKED)
                 .patient(patient)
                 .doctor(doctor)
                 .build());
+
+        notificationService.sendAppointmentBooked(patient.getEmail(),
+                "Your appointment is booked" + saved.getAppointmentDateTime());
         return toResponse(saved);
     }
 
