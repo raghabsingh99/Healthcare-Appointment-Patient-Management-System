@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Prescription {
+public class Prescription extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

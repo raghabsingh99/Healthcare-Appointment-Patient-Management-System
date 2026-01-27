@@ -12,7 +12,7 @@ import java.util.Stack;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Patient {
+public class Patient extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
