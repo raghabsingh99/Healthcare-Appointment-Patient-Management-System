@@ -4,6 +4,7 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.ent
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.NotFoundException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.DoctorRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ public class DoctorService {
 
     private final DoctorRepository doctorRepository;
 
+    @Cacheable(value = "doctors",key = "#id")
     public Doctor getEntity(Long id) throws NotFoundException {
         return doctorRepository.findById(id).orElseThrow(()->new NotFoundException("Doctor not found" +id));
     }
