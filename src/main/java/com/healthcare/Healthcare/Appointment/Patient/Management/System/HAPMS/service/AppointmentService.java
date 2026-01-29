@@ -25,6 +25,7 @@ public class AppointmentService {
     private final DoctorSlotService doctorSlotService;
     private final NotificationService notificationService;
 
+
     @Transactional
     public AppointmentResponse book(AppointmentCreateRequest req) throws NotFoundException, BusinessRuleException {
         Patient patient = patientService.getEntity(req.getPatientId());
@@ -56,6 +57,7 @@ public class AppointmentService {
         if (doctor.getDailyLimit() > 0 && doctorCount >= doctor.getDailyLimit()) {
             throw new BusinessRuleException("Doctor reached daily appointment limit for " + day);
         }
+
         Appointment saved = appointmentRepository.save(Appointment.builder()
                 .appointmentDateTime(appTime)
                 .status(AppointmentStatus.BOOKED)
@@ -65,6 +67,7 @@ public class AppointmentService {
 
         notificationService.sendAppointmentBooked(patient.getEmail(),
                 "Your appointment is booked" + saved.getAppointmentDateTime());
+        doctorSlotService.markedBooked(slot);
         return toResponse(saved);
     }
 
