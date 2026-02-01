@@ -5,6 +5,7 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.Patient;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.NotFoundException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.PatientRepository;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import java.util.List;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final AuditLogService auditLogService;
 
     public PatientResponse create(PatientCreateRequest req){
         Patient patient = Patient.builder()
@@ -29,6 +31,11 @@ public class PatientService {
                 .phone(req.getPhone())
                 .build();
         Patient saved = patientRepository.save(patient);
+
+        auditLogService.log(SecurityUtil.getCurrentUsername(),
+                "CREATE",
+                "Patient#"+saved.getId());
+
         return toResponse(saved);
     }
 
@@ -56,5 +63,12 @@ public class PatientService {
         Sort sort = dir.equalsIgnoreCase("desc")?Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page,size,sort);
         return patientRepository.findAll(pageable).map(this::toResponse);
+    }
+
+    public Page<PatientResponse> search(String q, Pageable pageable) {
+        Page<Patient> page = (q ==null || q.isBlank())
+                ? patientRepository.findAll(pageable)
+                :patientRepository.findByNameContainingIgnoreCase(q,pageable);
+        return page.map(this::toResponse);
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.nio.file.AccessDeniedException;
+import java.rmi.AccessException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +50,14 @@ public class GlobalExceptionalHandler {
         return ResponseEntity.badRequest().body(Map.of(
                 "error","VALIDATION",
                 "message",errors
+        ));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String,Object>> handleAccessDenial(AccessDeniedException e){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                "error","ACCESS_DENIED",
+                "message","Yo Do not have permission to access this resource"
         ));
     }
 }

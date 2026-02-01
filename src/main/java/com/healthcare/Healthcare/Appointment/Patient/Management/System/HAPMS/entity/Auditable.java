@@ -3,6 +3,7 @@ package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.en
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class Auditable {
 

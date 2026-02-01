@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +44,17 @@ public class PatientController {
             @RequestParam(defaultValue = "asc") String dir
     ){
         return patientService.getAllPaged(page,size,sortBy,dir);
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
+    public Page<PatientResponse> search(
+            @RequestParam(defaultValue = "")String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        Pageable pageable = PageRequest.of(page,size, Sort.by("id").descending());
+        return patientService.search(q,pageable);
     }
 
 

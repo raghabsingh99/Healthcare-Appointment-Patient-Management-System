@@ -8,6 +8,7 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exc
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.AppointmentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.xml.stream.events.EndDocument;
@@ -24,6 +25,7 @@ public class AppointmentService {
     private final PatientService patientService;
     private final DoctorSlotService doctorSlotService;
     private final NotificationService notificationService;
+    private final AuditLogService auditLogService;
 
 
     @Transactional
@@ -34,6 +36,10 @@ public class AppointmentService {
         DoctorSlot slot = doctorSlotService.getAvailableSlot(req.getSlotId());
         Doctor doctor = slot.getDoctor();
         LocalDateTime appTime = slot.getStartTime();
+
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
 
         // Rule: Patient cannot have overlapping time
@@ -68,6 +74,8 @@ public class AppointmentService {
         notificationService.sendAppointmentBooked(patient.getEmail(),
                 "Your appointment is booked" + saved.getAppointmentDateTime());
         doctorSlotService.markedBooked(slot);
+
+        auditLogService.log(username,"BOOK_APPOINTMENT","APPOINTMENT_ID= "+saved.getId());
         return toResponse(saved);
     }
 

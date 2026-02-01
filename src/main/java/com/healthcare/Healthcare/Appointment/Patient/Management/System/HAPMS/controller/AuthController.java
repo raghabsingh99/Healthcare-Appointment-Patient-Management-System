@@ -7,6 +7,8 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Response.AuthResponse;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.BusinessRuleException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.service.AuthService;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.util.SimpleRateLimiter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +31,14 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest req) throws BusinessRuleException {
+    public AuthResponse login(@Valid @RequestBody LoginRequest req, HttpServletRequest http) throws BusinessRuleException {
+        String key = http.getRemoteAddr() + ":" + req.getUsername();
+        if (!SimpleRateLimiter.allow(key)) {
+            throw new BusinessRuleException("Too many login attempts. Please try later.");
+        }
         return authService.login(req);
     }
+
 
     @PostMapping("/refresh")
     public AuthResponse refresh(@Valid@RequestBody RefreshTokenRequest req) throws BusinessRuleException {
