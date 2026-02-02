@@ -25,4 +25,19 @@ and a.appointmentDateTime between :from and :to
 """)
     List<Appointment> findBookedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
+    long countByStatus(AppointmentStatus status);
+
+    @Query("select count(a) from Appointment a where a.appointmentDateTime >= :start and a.appointmentDateTime < :end")
+
+    long countToday(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("""
+select d.name, count(a.id)
+from Appointment a join a.doctor d
+group by d.name
+order by count(a.id) desc
+""")
+    List<Object[]> topDoctors();
+
+
 }
