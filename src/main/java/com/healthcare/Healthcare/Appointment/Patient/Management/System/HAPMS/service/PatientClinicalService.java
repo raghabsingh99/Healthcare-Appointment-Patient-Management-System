@@ -1,6 +1,7 @@
 package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.service;
 
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.Allergy;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.MedicalHistoryEntry;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.Patient;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.NotFoundException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.AllergyRepository;
@@ -9,6 +10,7 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.rep
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 
@@ -38,5 +40,20 @@ public class PatientClinicalService {
                .name(patient.getName())
                .build();
        return allergyRepository.save(allergy);
+    }
+
+    public List<MedicalHistoryEntry> getHistory(Long patientId){
+        return medicalHistoryRepository.findByPatientIdOrderByDateDesc(patientId);
+    }
+
+    public MedicalHistoryEntry addHistory(Long patientId,String diagnosis,String notes) throws NotFoundException {
+        Patient patient = getPatientOrThrow(patientId);
+
+        MedicalHistoryEntry entry = MedicalHistoryEntry.builder()
+                .patient(patient)
+                .entryDate(LocalDate.now())
+                .notes(notes)
+                .build();
+        return medicalHistoryRepository.save(entry);
     }
 }
