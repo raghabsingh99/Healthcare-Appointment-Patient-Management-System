@@ -32,12 +32,12 @@ public class PatientClinicalService {
         return allergyRepository.findByPatientId(patientId);
     }
 
-    public Allergy addAllergy(Long patientId) throws NotFoundException {
+    public Allergy addAllergy(Long patientId,String name) throws NotFoundException {
        Patient patient = getPatientOrThrow(patientId);
 
        Allergy allergy = Allergy.builder()
                .patient(patient)
-               .name(patient.getName())
+               .name(name)
                .build();
        return allergyRepository.save(allergy);
     }
@@ -52,6 +52,7 @@ public class PatientClinicalService {
         MedicalHistoryEntry entry = MedicalHistoryEntry.builder()
                 .patient(patient)
                 .entryDate(LocalDate.now())
+                .diagnosis(diagnosis)
                 .notes(notes)
                 .build();
         return medicalHistoryRepository.save(entry);
