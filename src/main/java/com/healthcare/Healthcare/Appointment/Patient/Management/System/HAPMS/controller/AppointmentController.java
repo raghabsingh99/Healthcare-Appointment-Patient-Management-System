@@ -1,6 +1,7 @@
 package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.controller;
 
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentCreateRequest;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentSearchRequest;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentStatusUpdateRequest;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Response.AppointmentResponse;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.AppointmentStatus;
@@ -22,6 +23,7 @@ public class AppointmentController {
 
     @Autowired
     private AppointmentService appointmentService;
+
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -47,4 +49,10 @@ public class AppointmentController {
     public AppointmentResponse updateStatus(@PathVariable Long id, @Valid@RequestBody AppointmentStatusUpdateRequest req) throws BusinessRuleException, NotFoundException {
         return appointmentService.updateStatus(id,req.getStatus());
     }
+    @PostMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
+    public List<AppointmentResponse> search(@RequestBody AppointmentSearchRequest req){
+        return appointmentService.search(req);
+    }
+
 }

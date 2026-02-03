@@ -31,3 +31,25 @@ A Spring Boot backend application for managing patients, doctors, appointments, 
 ```bash
 mvn clean install
 mvn spring-boot:run
+
+## Key Features
+- JWT auth + Refresh tokens
+- Logout with Redis token blacklist
+- Role-based authorization (ADMIN/DOCTOR/PATIENT)
+- Concurrency-safe slot booking (pessimistic locking)
+- Appointment conflict detection (time overlap algorithm)
+- Advanced search (dynamic filtering via JPA Specifications)
+- Clinical records: allergies + medical history
+- Lab report upload/download
+- Admin dashboard stats and CSV exports
+- Redis cache + scheduled reminder jobs
+
+## Tech Stack
+Java • Spring Boot • Spring Security • JPA/Hibernate • MySQL • Redis • Maven
+
+## Running Locally
+1. Start MySQL and Redis
+2. Configure `application.properties`
+3. Run:
+   ```bash
+   mvn spring-boot:run

@@ -6,13 +6,19 @@ import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.ent
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.SlotStatus;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.BusinessRuleException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.NotFoundException;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.AppointmentRepository;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.DoctorSlotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.print.Doc;
 import java.nio.channels.NotYetBoundException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +26,7 @@ public class DoctorSlotService {
 
     private final DoctorSlotRepository doctorSlotRepository;
     private final DoctorService doctorService;
+    private AppointmentRepository appointmentRepository;
 
     public DoctorSlot create(DoctorSlotCreateRequest req) throws BusinessRuleException, NotFoundException {
         if(!req.getEndTime().isAfter(req.getStartTime())){
@@ -45,8 +52,20 @@ public class DoctorSlotService {
         return slot;
     }
 
-    public List<DoctorSlot> getAvailableSlots(Long doctorId){
-        return doctorSlotRepository.findByDoctorIdAndStatus(doctorId,SlotStatus.AVAILABLE);
+    public List<DoctorSlot> getAvailableSlots(Long doctorId, LocalDate date){
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.plusDays(1).atStartOfDay();
+        List<DoctorSlot> slots = doctorSlotRepository.findSlotsForDoctorOnDate(
+                doctorId,
+                SlotStatus.AVAILABLE,
+                start,
+                end
+        );
+        Set<LocalDateTime> booked = new HashSet<>(appointmentRepository
+                .findBookedTimes(doctorId, date));
+        return slots.stream()
+                .filter(s -> !booked.contains(s.getStartTime()))
+                .toList();
     }
 
     public void markedBooked(DoctorSlot slot){

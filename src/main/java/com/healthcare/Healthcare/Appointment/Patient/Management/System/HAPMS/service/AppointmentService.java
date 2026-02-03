@@ -1,17 +1,20 @@
 package com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.service;
 
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentCreateRequest;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Request.AppointmentSearchRequest;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.dto.Response.AppointmentResponse;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.entity.*;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.BusinessRuleException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.exception.NotFoundException;
 import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.AppointmentRepository;
+import com.healthcare.Healthcare.Appointment.Patient.Management.System.HAPMS.repository.DoctorRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import javax.xml.stream.events.EndDocument;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +29,10 @@ public class AppointmentService {
     private final DoctorSlotService doctorSlotService;
     private final NotificationService notificationService;
     private final AuditLogService auditLogService;
+    private final DoctorRepository doctorRepository;
+
+    @Autowired
+    private AppointmentSearchSpec appointmentSearchSpec;
 
 
     @Transactional
@@ -62,6 +69,9 @@ public class AppointmentService {
                 doctor.getId(), dStart, dEnd);
         if (doctor.getDailyLimit() > 0 && doctorCount >= doctor.getDailyLimit()) {
             throw new BusinessRuleException("Doctor reached daily appointment limit for " + day);
+        }
+        if(appointmentRepository.existsOverlap(doctor.getId(), AppointmentStatus.BOOKED,dStart,dEnd)){
+            throw new BusinessRuleException("Doctor already has an overlapping appointment");
         }
 
         Appointment saved = appointmentRepository.save(Appointment.builder()
@@ -124,6 +134,20 @@ public class AppointmentService {
         return toResponse(saved);
 
     }
+    public long assignDoctorAutomatically(){
+        return doctorRepository.findDoctorsByLoad().get(0);
+    }
+
+
+    public List<AppointmentResponse> search(AppointmentSearchRequest req) {
+        return appointmentRepository
+                .findAll(appointmentSearchSpec.build(req))
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+
 }
 
 

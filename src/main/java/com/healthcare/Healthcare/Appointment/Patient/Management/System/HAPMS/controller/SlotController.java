@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.print.Doc;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -28,8 +29,8 @@ public class SlotController {
 
     @GetMapping("/doctor/{doctorId}/available")
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR','PATIENT')")
-    public List<DoctorSlot> available(@PathVariable Long doctorId){
-        return doctorSlotService.getAvailableSlots(doctorId);
+    public List<DoctorSlot> available(@PathVariable Long doctorId, LocalDate date){
+        return doctorSlotService.getAvailableSlots(doctorId,date);
     }
 
     @GetMapping("/{slotId}")

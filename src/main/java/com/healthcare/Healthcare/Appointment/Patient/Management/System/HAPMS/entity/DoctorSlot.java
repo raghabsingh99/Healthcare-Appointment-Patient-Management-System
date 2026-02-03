@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NegativeOrZero;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,6 +27,9 @@ public class DoctorSlot {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SlotStatus status;
+
+    @Column(nullable = false)
+    private LocalDate date;
 
 
 
