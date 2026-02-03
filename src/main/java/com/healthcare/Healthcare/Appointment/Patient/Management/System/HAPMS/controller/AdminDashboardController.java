@@ -35,7 +35,7 @@ public class AdminDashboardController {
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("totalPatients", patientRepository.count());
         res.put("totalDoctors",doctorRepository.count());
-        res.put("appointmentTodau",appointmentRepository.countToday(start,end));
+        res.put("appointmentToday",appointmentRepository.countToday(start,end));
         res.put("bookCount",appointmentRepository.countByStatus(AppointmentStatus.BOOKED));
         res.put("completedCount",appointmentRepository.countByStatus(AppointmentStatus.COMPLETED));
         res.put("cancelledCount",appointmentRepository.countByStatus(AppointmentStatus.CANCELED));

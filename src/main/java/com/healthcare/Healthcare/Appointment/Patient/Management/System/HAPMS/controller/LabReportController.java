@@ -28,7 +28,7 @@ public class LabReportController {
     private final LabReportService labReportService;
     private final LabRepository repository;
 
-    // ✅ Upload lab report
+
     @PostMapping("/upload")
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public LabReport upload(
@@ -40,14 +40,13 @@ public class LabReportController {
         return labReportService.upload(patientId, appointmentId, file);
     }
 
-    // ✅ List reports by patient
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public List<LabReport> list(@PathVariable Long patientId) {
         return repository.findByPatientId(patientId);
     }
 
-    // ✅ Download report
+
     @GetMapping("/{id}/download")
     @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     public ResponseEntity<FileSystemResource> download(@PathVariable Long id)
